@@ -13,65 +13,37 @@ include('repository.js');
 
 class GitHubLB {
   run(input, options) {
-    const GITHUB_LINK_FORMAT  = /^https?:\/\/((www|gist|raw)\.)?github\.(io|com)/;
-    const SET_TOKEN_FORMAT    = /^!set-token (.*)$/;
-    const ISSUE_OR_PR_FORMAT  = /^([^\/]+)\/([^\/#]+)(?:\/pull\/|\/issues\/|#)(\d+)$/;
-    const REPOSITORY_FORMAT   = /^([^\/]+)\/([^\/#]+)$/;
-    const COMMIT_SHA_FORMAT   = /^\b[0-9a-f]{5,40}\b$/;
-    const ACCOUNT_FORMAT      = /^(\w+)$/;
+    var defaultItems = [
+      {
+        title: "My Gists",
+        url: "url",
+        icon: 'gist.png',
+      },
+      {
+        title: "My Issues",
+        url: "url",
+        icon: 'issue.png',
+      },
+      {
+        title: "My Pull Requests",
+        url: "url",
+        icon: 'pull-request.png',
+      },
+      {
+        title: "My Repositories",
+        url: "url",
+        icon: 'repo.png',
+      },
+    ];
 
-    let match;
-
-    // Matching:
-    // https://github.com/bswinnerton/dotfiles/blob/master/ack/ackrc.symlink#L6
-    if (input.match(GITHUB_LINK_FORMAT)) {
-      return this.openLinkShortnerMenu(input);
-    }
-
-    // Matching:
-    // set-token <token>
-    if (match = input.match(SET_TOKEN_FORMAT)) {
-      return this.setToken(match[1]);
-    }
-
-    // Matching:
-    // rails/rails#123
-    // rails/rails/issues/123
-    // rails/rails/pull/123
-    else if (match = input.match(ISSUE_OR_PR_FORMAT)) {
-      let owner       = new Account(match[1]);
-      let repository  = new Repository(owner, match[2]);
-      let issue       = new Issue(repository, match[3]);
-      return LaunchBar.openURL(issue.url);
-    }
-
-    // Matching:
-    // rails/rails
-    else if (match = input.match(REPOSITORY_FORMAT)) {
-      let owner       = new Account(match[1]);
-      let repository  = new Repository(owner, match[2]);
-      return this.openRepositoryMenu(repository);
-    }
-
-    // Matching:
-    // 911a93ac
-    // 911a93ac26c4f5919d1ebdf67a9e3db31c5b9dce
-    else if (match = input.match(COMMIT_SHA_FORMAT)) {
-      let commit = new Commit(match[0]);
-      return this.openCommitPullRequestsMenu(commit);
-    }
-
-    // Matching:
-    // rails
-    else if (match = input.match(ACCOUNT_FORMAT)) {
-      let account = new Account(match[1]);
-      return this.openAccountMenu(account);
-    }
-
-    // Matching everything else:
-    // rails/rails/tree/master/Gemfile
-    else {
-      return LaunchBar.openURL('https://github.com/' + input);
+    if (input.length > 0) {
+      function isMatch(item) {
+        var regex = new RegExp(input, "i")
+        return item.title.match(regex);
+      }
+      return defaultItems.filter(isMatch);
+    } else {
+      return defaultItems;
     }
   }
 
